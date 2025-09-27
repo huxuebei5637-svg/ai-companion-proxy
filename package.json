@@ -1,0 +1,12 @@
+{
+  "name": "ai-companion-proxy",
+  "version": "1.0.0",
+  "description": "A Vercel proxy for Qualtrics to Gemini API",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "@google/genai": "^0.1.0"
+  }
+}
