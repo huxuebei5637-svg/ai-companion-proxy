@@ -1,7 +1,11 @@
-npm install axios
 {
   "name": "ai-companion-proxy",
   "version": "1.0.0",
+  "description": "AI Companion Proxy Service",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "node api/index.js"
+  },
   "dependencies": {
     "axios": "^1.6.0"
   },
