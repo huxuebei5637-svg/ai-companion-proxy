@@ -1,25 +1,46 @@
-const systemInstruction = "你是一位大学心理辅导员和AI导师，你的目标是通过温暖、支持性和非批判性的方式，利用户的焦虑提供深度感知。实用的建议，请保持你的回答在3mm中"
-
 export default async function handler(req, res) {
+    // 设置 CORS 头
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
     if (req.method !== 'POST') {
-        res.status(405).send("Method Not Allowed");
-        return;
+        return res.status(405).json({ error: 'Method not allowed' });
     }
     
     try {
-        const { user_text, step } = req.body;
-        const BIMUL_API_KEY = process.env.BIMUL_API_KEY;
+        console.log('=== 开始处理请求 ===');
         
-        if (!user_text || !BIMUL_API_KEY) {
-            return res.status(400).json({
-                al_response: 'API配置错误，请检查Key和请求值'
+        const { user_text, step } = req.body;
+        console.log('请求体:', JSON.stringify(req.body, null, 2));
+        
+        if (!user_text) {
+            return res.status(400).json({ 
+                al_response: '错误: 请提供 user_text 参数' 
             });
         }
-
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${BIMUL_API_KEY}`;
-
-        // 使用 fetch 代替 axios
-        const response = await fetch(apiUrl, {
+        
+        const BIMUL_API_KEY = process.env.BIMUL_API_KEY;
+        console.log('API Key 长度:', BIMUL_API_KEY ? BIMUL_API_KEY.length : '未设置');
+        
+        if (!BIMUL_API_KEY) {
+            return res.status(500).json({ 
+                al_response: '错误: API 密钥未配置' 
+            });
+        }
+        
+        // 使用正确的模型名称 - 选择其中一个
+        const modelName = 'gemini-2.5-flash'; // 或者 'gemini-2.0-flash'
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${BIMUL_API_KEY}`;
+        
+        console.log('使用模型:', modelName);
+        console.log('API URL:', apiUrl.replace(BIMUL_API_KEY, '***'));
+        
+        const geminiResponse = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -27,29 +48,42 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `系统指令: ${systemInstruction}\n用户输入: ${user_text}\n步骤: ${step}`
+                        text: `你是一位心理辅导员，请用温暖支持的方式回答以下问题：${user_text}`
                     }]
                 }]
             })
         });
-
-        if (!response.ok) {
-            throw new Error(`API请求失败: ${response.status}`);
+        
+        console.log('Gemini API 响应状态:', geminiResponse.status);
+        
+        if (!geminiResponse.ok) {
+            const errorText = await geminiResponse.text();
+            console.error('Gemini API 错误详情:', errorText);
+            return res.status(500).json({ 
+                al_response: `Gemini API 错误: ${geminiResponse.status}`,
+                debug: `使用的模型: ${modelName}`
+            });
         }
-
-        const data = await response.json();
         
-        // 处理 Gemini API 响应
-        const generatedText = data.candidates[0].content.parts[0].text;
+        const geminiData = await geminiResponse.json();
+        console.log('Gemini API 响应成功');
         
-        res.status(200).json({
-            al_response: generatedText
-        });
+        if (geminiData.candidates && geminiData.candidates.length > 0) {
+            const responseText = geminiData.candidates[0].content.parts[0].text;
+            return res.status(200).json({
+                al_response: responseText
+            });
+        } else {
+            return res.status(500).json({ 
+                al_response: '错误: Gemini API 返回了空响应'
+            });
+        }
         
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            al_response: '请求处理过程中出现错误'
+        console.error('全局错误:', error);
+        return res.status(500).json({ 
+            al_response: '服务器内部错误',
+            error: error.message 
         });
     }
 }
