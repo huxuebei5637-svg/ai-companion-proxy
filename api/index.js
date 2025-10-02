@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-    // 设置 CORS 头
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -32,8 +31,6 @@ export default async function handler(req, res) {
                 al_response: '错误: API 密钥未配置' 
             });
         }
-        
-        // 使用正确的模型名称 - 选择其中一个
         const modelName = 'gemini-2.5-flash'; // 或者 'gemini-2.0-flash'
         const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${BIMUL_API_KEY}`;
         
