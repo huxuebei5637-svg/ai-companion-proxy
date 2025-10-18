@@ -1,0 +1,152 @@
+/* 让整个页面背景更柔和 */
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f4;
+}
+
+/* 聊天总容器的样式，让它居中，有边框 */
+#chat-container {
+    width: 400px;
+    height: 600px;
+    margin: 30px auto;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;          /* 开启Flexbox布局 */
+    flex-direction: column; /* 让内部元素垂直排列 */
+    overflow: hidden;       /* 防止子元素溢出圆角 */
+}
+
+/* 消息显示“屏幕”的样式 */
+#chat-box {
+    flex-grow: 1;                 /* 【关键】让消息区占据所有剩余空间 */
+    padding: 20px;
+    overflow-y: auto;             /* 内容多了只在这里出滚动条 */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#input-container {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eee; /* 用上边框作为分割线 */
+}
+
+/* 输入框的样式 */
+#user-input {
+    flex-grow: 1; /* 占据尽可能多的空间 */
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* 发送按钮的样式 */
+#send-btn {
+    border: none;
+    background-color: #007bff; /* 蓝色背景 */
+    color: white; /* 白色文字 */
+    padding: 10px 15px;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer; /* 鼠标移上去变成小手 */
+}
+
+/* 按钮悬停效果 */
+#send-btn:hover {
+    background-color: #0056b3;
+}
+#send-btn:disabled {
+    background-color: #a0cfff; /* 禁用时用一个更浅的蓝色 */
+    cursor: not-allowed;     /* 鼠标变成禁止符号 */
+}
+
+/* 通用消息样式 */
+.message {
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    max-width: 80%;
+}
+
+/* AI消息的专属样式（靠左，灰色背景） */
+.ai-message {
+    background-color: #e9e9eb;
+    align-self: flex-start; /* 靠左 */
+}
+
+/* 用户消息的专属样式（靠右，蓝色背景） */
+.user-message {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-end; /* 靠右 */
+    margin-left: auto; /* 这行是实现靠右的关键 */
+}
+/* ======================================== */
+/* ======= 以下是为添加头像新增的样式 ======= */
+/* ======================================== */
+
+/* 新增：包裹头像和消息文本的“外壳”的通用样式 */
+.message-wrapper {
+    display: flex;         /* 让里面的头像和文本可以并排站 */
+    align-items: flex-start; /* 让他们从顶部对齐，更好看 */
+    margin-bottom: 15px;   /* 每条消息之间的距离 */
+    max-width: 85%;        /* 消息不要太宽 */
+}
+
+/* 新增：AI消息外壳的样式（靠左） */
+.ai-message-wrapper {
+    align-self: flex-start; /* 整个外壳靠在聊天框的左边 */
+}
+
+/* 新增：用户消息外壳的样式（靠右） */
+.user-message-wrapper {
+    align-self: flex-end;   /* 整个外壳靠在聊天框的右边 */
+    flex-direction: row-reverse; /* 关键一步：让头像和文本的顺序反过来，实现头像在右 */
+}
+
+/* 新增：头像本身的样式 */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 0 10px;
+    border: 1px solid #f0f0f0; /* 给头像加一个几乎看不见的浅灰色边框 */
+}
+
+/* 修改：这是消息气泡的样式 */
+/* 我们把之前的 .message 改名为 .message-text，让它意思更清晰 */
+.message-text {
+    padding: 10px 15px;
+    border-radius: 20px; /* 把 18px 稍微改大一点 */
+    word-break: break-word;
+}
+
+/* 修改：AI消息气泡的背景色 */
+.ai-message-wrapper .message-text {
+    background-color: #e9e9eb;
+    color: black;
+}
+
+/* 修改：用户消息气泡的背景色和文字颜色 */
+.user-message-wrapper .message-text {
+    background-color: #007bff;
+    color: white;
+}
+/* 美化滚动条的样式 */
+#chat-box::-webkit-scrollbar {
+    width: 6px;
+}
+#chat-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+#chat-box::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+#chat-box::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
