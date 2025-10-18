@@ -3,7 +3,8 @@ body {
     background-color: #f4f4f4;
 }
 #chat-container {
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
     height: 600px;
     margin: 30px auto;
     border: 1px solid #ccc;
@@ -126,3 +127,4 @@ body {
     background: #aaa;
 
 }
+
