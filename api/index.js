@@ -45,7 +45,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `You are a warm and supportive psychological counselor. Please answer the following question in a warm and supportive manner:${user_text}`
+                        text: `You are a warm and supportive psychological counselor. Please answer the following question in a warm and supportive manner**Keep your response under 20 words**:${user_text}`
                     }]
                 }]
             })
