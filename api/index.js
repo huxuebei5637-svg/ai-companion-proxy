@@ -2,80 +2,79 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
+
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
-    
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
-    
+
     try {
-        console.log('=== 开始处理请求 ===');
-        
-        const { user_text, step } = req.body;
-        console.log('请求体:', JSON.stringify(req.body, null, 2));
-        
+        // --- 获取前端发来的消息，这部分保持不变 ---
+        const { user_text } = req.body;
         if (!user_text) {
             return res.status(400).json({ 
                 al_response: '错误: 请提供 user_text 参数' 
             });
         }
-        
-        const BIMUL_API_KEY = process.env.BIMUL_API_KEY;
-        console.log('API Key 长度:', BIMUL_API_KEY ? BIMUL_API_KEY.length : '未设置');
-        
-        if (!BIMUL_API_KEY) {
+
+       
+        const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+        if (!OPENAI_API_KEY) {
             return res.status(500).json({ 
-                al_response: '错误: API 密钥未配置' 
+                al_response: '错误: OpenAI API 密钥未配置' 
             });
         }
-        const modelName = 'gemini-2.5-flash'; // 或者 'gemini-2.0-flash'
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${BIMUL_API_KEY}`;
-        
-        console.log('使用模型:', modelName);
-        console.log('API URL:', apiUrl.replace(BIMUL_API_KEY, '***'));
-        
-        const geminiResponse = await fetch(apiUrl, {
+
+        const apiUrl = 'https://api.openai.com/v1/chat/completions';
+        const modelName = 'gpt-5'; 
+
+        const payload = {
+            model: modelName,
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a warm and supportive psychological counselor. Keep your response under 20 words."
+                },
+                {
+                    role: "user",
+                    content: user_text
+                }
+            ]
+        };
+
+        const openAiResponse = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
             },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `You are a warm and supportive psychological counselor. Please answer the following question in a warm and supportive manner**Keep your response under 20 words**:${user_text}`
-                    }]
-                }]
-            })
+            body: JSON.stringify(payload)
         });
-        
-        console.log('Gemini API 响应状态:', geminiResponse.status);
-        
-        if (!geminiResponse.ok) {
-            const errorText = await geminiResponse.text();
-            console.error('Gemini API 错误详情:', errorText);
+
+        if (!openAiResponse.ok) {
+            const errorText = await openAiResponse.text();
+            console.error('OpenAI API 错误详情:', errorText);
             return res.status(500).json({ 
-                al_response: `Gemini API 错误: ${geminiResponse.status}`,
-                debug: `使用的模型: ${modelName}`
+                al_response: `OpenAI API 错误: ${openAiResponse.status}`
             });
         }
-        
-        const geminiData = await geminiResponse.json();
-        console.log('Gemini API 响应成功');
-        
-        if (geminiData.candidates && geminiData.candidates.length > 0) {
-            const responseText = geminiData.candidates[0].content.parts[0].text;
+
+        const openAiData = await openAiResponse.json();
+
+        if (openAiData.choices && openAiData.choices.length > 0) {
+            const responseText = openAiData.choices[0].message.content;
             return res.status(200).json({
                 al_response: responseText
             });
         } else {
             return res.status(500).json({ 
-                al_response: '错误: Gemini API 返回了空响应'
+                al_response: '错误: OpenAI API 返回了空响应' 
             });
         }
-        
+
     } catch (error) {
         console.error('全局错误:', error);
         return res.status(500).json({ 
