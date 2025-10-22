@@ -6,11 +6,11 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
-        const { user_text } = req.body; 
+        const { history } = req.body; 
 
-        if (!user_text) {
+        if (!history || history.length === 0) {
             return res.status(400).json({ 
-                al_response: '错误: 请提供 user_text 参数' 
+                al_response: '错误: 未收到对话历史' 
             });
         }
         const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -24,31 +24,30 @@ export default async function handler(req, res) {
         const modelName = 'gpt-4o';
         const smartSystemPrompt = `
 You are a warm and supportive psychological counselor.
-
 Your default response style is brief and supportive, under 20 words.
-
 HOWEVER, you must analyze the user's message for negative emotions. 
 If the user mentions feeling sad, depressed, hopeless, crying, mentions medication, or expresses any form of significant distress, you MUST change your style. 
-
 In those specific cases, you must:
-1.  Respond with extra warmth, care, and meticulousness.
-2.  Fully validate their feelings.
-3.  Gently offer support.
-4.  You can (and should) ignore the 20-word limit to provide a proper, supportive response.
+1. Respond with extra warmth, care, and meticulousness.
+2. Fully validate their feelings.
+3. Gently offer support.
+4. You can (and should) ignore the 20-word limit to provide a proper, supportive response.
 `;
-        
+        const messages = [
+            { role: "system", content: smartSystemPrompt }
+        ];
+
+        for (const message of history) {
+            if (message.sender === 'user') {
+                messages.push({ role: 'user', content: message.text });
+            } else if (message.sender === 'ai') {
+                messages.push({ role: 'assistant', content: message.text });
+            }
+        }
+
         const payload = {
             model: modelName,
-            messages: [
-                {
-                    role: "system",
-                    content: smartSystemPrompt 
-                },
-                {
-                    role: "user",
-                    content: user_text
-                }
-            ]
+            messages: messages 
         };
 
         const openAiResponse = await fetch(apiUrl, {
