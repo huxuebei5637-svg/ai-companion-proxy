@@ -2,17 +2,25 @@ const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const finishBtn = document.getElementById('finish-btn');
+
 let conversationHistory = [];
+
 function sendMessage() {
     const userMessageText = userInput.value.trim();
     if (userMessageText === '') {
         return;
     }
+
     displayMessage(userMessageText, 'user');
+    
     conversationHistory.push({ sender: 'user', text: userMessageText });
+    
     userInput.value = '';
-    getAiResponse(userMessageText);
+    sendBtn.disabled = true; 
+    
+    getAiResponse();
 }
+
 function displayMessage(text, sender) {
     const messageWrapper = document.createElement('div');
     messageWrapper.classList.add('message-wrapper');
@@ -39,13 +47,14 @@ function displayMessage(text, sender) {
     chatBox.appendChild(messageWrapper);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
-async function getAiResponse(userMessage) {
+
+async function getAiResponse() {
     const backendUrl = '/api/';
     try {
         const response = await fetch(backendUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_text: userMessage }),
+            body: JSON.stringify({ history: conversationHistory }),
         });
 
         const data = await response.json();
@@ -65,12 +74,16 @@ async function getAiResponse(userMessage) {
         displayMessage('Sorry, there was an error connecting to the backend server', 'ai');
     }
 }
+
+
 sendBtn.addEventListener('click', sendMessage);
+
 userInput.addEventListener('keyup', function(event) {
     if (event.key === 'Enter') {
         sendMessage();
     }
 });
+
 userInput.addEventListener('input', () => {
     if (userInput.value.trim() !== '') {
         sendBtn.disabled = false; 
@@ -78,22 +91,11 @@ userInput.addEventListener('input', () => {
         sendBtn.disabled = true;  
     }
 });
-function sendMessage() {
-    const userMessageText = userInput.value.trim();
-    if (userMessageText === '') {
-        return;
-    }
-    displayMessage(userMessageText, 'user');
-    conversationHistory.push({ sender: 'user', text: userMessageText });
-    userInput.value = '';
-    sendBtn.disabled = true; 
-    getAiResponse(userMessageText);
-}
+
 window.addEventListener('load', () => {
     const welcomeMessage = "Hello! How can I assist you today?";
     displayMessage(welcomeMessage, 'ai');
     conversationHistory.push({ sender: 'ai', text: welcomeMessage });
-
 });
 
 finishBtn.addEventListener('click', () => {
