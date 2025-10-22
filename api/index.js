@@ -12,7 +12,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // --- 获取前端发来的消息，这部分保持不变 ---
         const { user_text } = req.body;
         if (!user_text) {
             return res.status(400).json({ 
