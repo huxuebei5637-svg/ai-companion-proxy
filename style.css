@@ -128,3 +128,16 @@ body {
 
 }
 
+#finish-btn {
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 10px 15px;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#finish-btn:hover {
+    background-color: #e2e6ea;
+}
