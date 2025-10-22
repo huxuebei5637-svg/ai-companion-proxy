@@ -2,24 +2,17 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
-        const { user_text } = req.body;
+        const { user_text } = req.body; 
+
         if (!user_text) {
             return res.status(400).json({ 
                 al_response: '错误: 请提供 user_text 参数' 
             });
         }
-
-       
         const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
         if (!OPENAI_API_KEY) {
             return res.status(500).json({ 
@@ -28,14 +21,28 @@ export default async function handler(req, res) {
         }
 
         const apiUrl = 'https://api.openai.com/v1/chat/completions';
-        const modelName = 'gpt-5'; 
+        const modelName = 'gpt-4o';
+        const smartSystemPrompt = `
+You are a warm and supportive psychological counselor.
 
+Your default response style is brief and supportive, under 20 words.
+
+HOWEVER, you must analyze the user's message for negative emotions. 
+If the user mentions feeling sad, depressed, hopeless, crying, mentions medication, or expresses any form of significant distress, you MUST change your style. 
+
+In those specific cases, you must:
+1.  Respond with extra warmth, care, and meticulousness.
+2.  Fully validate their feelings.
+3.  Gently offer support.
+4.  You can (and should) ignore the 20-word limit to provide a proper, supportive response.
+`;
+        
         const payload = {
             model: modelName,
             messages: [
                 {
                     role: "system",
-                    content: "You are a warm and supportive psychological counselor. Keep your response under 20 words."
+                    content: smartSystemPrompt 
                 },
                 {
                     role: "user",
@@ -55,7 +62,6 @@ export default async function handler(req, res) {
 
         if (!openAiResponse.ok) {
             const errorText = await openAiResponse.text();
-            console.error('OpenAI API 错误详情:', errorText);
             return res.status(500).json({ 
                 al_response: `OpenAI API 错误: ${openAiResponse.status}`
             });
