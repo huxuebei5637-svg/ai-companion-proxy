@@ -1,6 +1,7 @@
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
+const finishBtn = document.getElementById('finish-btn');
 let conversationHistory = [];
 function sendMessage() {
     const userMessageText = userInput.value.trim();
@@ -93,4 +94,14 @@ window.addEventListener('load', () => {
     displayMessage(welcomeMessage, 'ai');
     conversationHistory.push({ sender: 'ai', text: welcomeMessage });
 
+});
+
+finishBtn.addEventListener('click', () => {
+    const chatLog = JSON.stringify(conversationHistory);
+    window.parent.postMessage(chatLog, '*');
+    alert("Conversation saved! Please click the arrow button to continue.");
+    userInput.disabled = true;
+    sendBtn.disabled = true;
+    finishBtn.disabled = true;
+    userInput.placeholder = "The conversation has ended.";
 });
